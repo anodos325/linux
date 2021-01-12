@@ -242,5 +242,6 @@ clean:
 binary: binary-arch
 EOF
 chmod +x debian/rules
+cp scripts/package/debian-uefi-certs.pem debian/certs
 
 exit 0
