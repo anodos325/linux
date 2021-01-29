@@ -6,11 +6,11 @@
 
 set -e
 
-KERNELRELEASE=$(cat include/config/kernel.release)
-KDEB_SOURCENAME=linux-$KERNELRELEASE
+KERNELRELEASE="${KERNELRELEASE:=$(cat include/config/kernel.release)}"
+KDEB_SOURCENAME="${KDEB_SOURCENAME:="linux-$KERNELRELEASE"}"
 MAINTAINER="Andrew Walker <awalker@ixsystems.com>"
-MAKE="/usr/bin/make"
-ARCH="x86"
+MAKE="${MAKE:="/usr/bin/make"}"
+ARCH="${ARCH:="x86"}"
 
 is_enabled() {
 	grep -q "^$1=y" include/config/auto.conf
@@ -112,7 +112,19 @@ set_debarch
 
 email=${DEBEMAIL-$EMAIL}
 
-maintainer=$MAINTAINER
+# use email string directly if it contains <email>
+if echo $email | grep -q '<.*>'; then
+	maintainer=$email
+else
+	# or construct the maintainer string
+	user=${KBUILD_BUILD_USER-$(id -nu)}
+	name=${DEBFULLNAME-$user}
+	if [ -z "$email" ]; then
+		buildhost=${KBUILD_BUILD_HOST-$(hostname -f 2>/dev/null || hostname)}
+		email="$user@$buildhost"
+	fi
+	maintainer="$name <$email>"
+fi
 
 # Try to determine distribution
 if [ -n "$KDEB_CHANGELOG_DIST" ]; then
@@ -172,7 +184,7 @@ Rules-Requires-Root: no
 Build-Depends: bc, rsync, kmod, cpio, bison, flex | flex:native $extra_build_depends
 Homepage: https://www.kernel.org/
 
-Package: $packagename-$version
+Package: $packagename-$debarch
 Architecture: $debarch
 Description: Linux kernel, version $version
  This package contains the Linux kernel, modules and corresponding other
@@ -191,7 +203,7 @@ EOF
 if is_enabled CONFIG_MODULES; then
 cat <<EOF >> debian/control
 
-Package: linux-headers-$version
+Package: linux-headers-$debarch
 Architecture: $debarch
 Description: Linux kernel headers for $version on $debarch
  This package provides kernel header files for $version on $debarch
@@ -203,7 +215,7 @@ fi
 if is_enabled CONFIG_DEBUG_INFO; then
 cat <<EOF >> debian/control
 
-Package: linux-image-$version-dbg
+Package: linux-image-$debarch-dbg
 Section: debug
 Architecture: $debarch
 Description: Linux kernel debugging symbols for $version
@@ -236,6 +248,7 @@ clean:
 binary: binary-arch
 EOF
 chmod +x debian/rules
+mkdir debian/certs
 cp scripts/package/debian-uefi-certs.pem debian/certs
 
 exit 0
