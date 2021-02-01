@@ -109,7 +109,7 @@ deploy_libc_headers () {
 version=$KERNELRELEASE
 tmpdir=debian/linux-image
 dbg_dir=debian/linux-image-dbg
-packagename=linux-image-amd64
+packagename=linux-image-truenas-amd64
 dbg_packagename=$packagename-dbg
 
 if [ "$ARCH" = "um" ] ; then
@@ -211,11 +211,11 @@ done
 if [ "$ARCH" != "um" ]; then
 	if is_enabled CONFIG_MODULES; then
 		deploy_kernel_headers debian/linux-headers
-		create_package linux-headers-amd64 debian/linux-headers
+		create_package linux-headers-truenas-amd64 debian/linux-headers
 	fi
 
 	deploy_libc_headers debian/linux-libc-dev
-	create_package linux-libc-dev debian/linux-libc-dev
+	create_package linux-truenas-libc-dev debian/linux-libc-dev
 fi
 
 create_package "$packagename" "$tmpdir"
