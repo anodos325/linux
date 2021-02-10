@@ -166,6 +166,7 @@ EOF
 cat <<EOF > debian/control
 Source: $sourcename
 Section: kernel
+Architecture: $debarch
 Priority: optional
 Maintainer: $maintainer
 Rules-Requires-Root: no
@@ -175,6 +176,7 @@ Homepage: https://www.kernel.org/
 Package: $packagename-truenas-$debarch
 Architecture: $debarch
 Provides: $packagename-$debarch, linux-image-generic
+Depends: kmod, linux-base (>= 4.3~), initramfs-tools (>= 0.120+deb8u2) | linux-initramfs-tools
 Description: Linux kernel, version $version
  This package contains the Linux kernel, modules and corresponding other
  files, version: $version.
@@ -241,6 +243,6 @@ binary: binary-arch
 EOF
 chmod +x debian/rules
 mkdir debian/certs
-cp scripts/package/debian-uefi-certs.pem debian/certs
+cp scripts/package/truenas/debian-uefi-certs.pem debian/certs
 
 exit 0
